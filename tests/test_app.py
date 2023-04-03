@@ -3,6 +3,9 @@ from flask_testing import TestCase
 from datetime import date
 from app import app, db, Employee
 
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///employees.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 
 def create_sample_employee():
     employee = Employee(
@@ -37,6 +40,10 @@ class TestApp(TestCase):
         with app.app_context():
             db.session.remove()
             db.drop_all()
+
+    def test_get_all_employees(self):
+        response = self.app.get('/api/employees')
+        self.assertEqual(response.status_code, 200)
 
     def test_create_employee(self):
         response = self.app.post('/api/employees', json={
@@ -75,6 +82,7 @@ class TestApp(TestCase):
         employee = create_sample_employee()
         response = self.app.delete(f'/api/employees/{employee.id}')
         self.assertEqual(response.status_code, 204)
+
 
 if __name__ == '__main__':
     unittest.main()

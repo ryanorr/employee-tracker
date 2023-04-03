@@ -1,29 +1,20 @@
 from flask import Flask, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 from flask_migrate import Migrate
-from marshmallow import Schema, fields
+from marshmallow import fields
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from datetime import datetime
+from database import db
+from models import Employee
 
 app = Flask(__name__)
+CORS(app, resources={r'*': {'origins': 'http://localhost:3000'}})
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///employees.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
+db.init_app(app)
 migrate = Migrate(app, db)
-
-
-class Employee(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(100), nullable=False, unique=True)
-    phone_number = db.Column(db.String(15), nullable=False)
-    company = db.Column(db.String(100), nullable=False)
-    lcat = db.Column(db.String(50), nullable=False)
-    assigned_team = db.Column(db.String(50), nullable=False)
-    start_date = db.Column(db.Date, nullable=False)
-    termination_date = db.Column(db.Date, nullable=True)
-    is_team_lead = db.Column(db.Boolean, nullable=False, default=False)
 
 
 class EmployeeSchema(SQLAlchemyAutoSchema):
@@ -38,12 +29,19 @@ employee_schema = EmployeeSchema()
 employees_schema = EmployeeSchema(many=True)
 
 
+@app.route('/api/employees', methods=['GET'])
+def get_all_employees():
+    employees = Employee.query.all()
+    return jsonify([employee.to_dict() for employee in employees])
+
+
 @app.route('/api/employees', methods=['POST'])
 def create_employee():
     data = request.get_json()
 
     date_fields = ['start_date', 'termination_date']
-    data.update({field: datetime.strptime(data.get(field), '%Y-%m-%d').date() if data.get(field) else None for field in date_fields})
+    data.update({field: datetime.strptime(data.get(field), '%Y-%m-%d').date() if data.get(field) else None for field in
+                 date_fields})
 
     new_employee = Employee(**data)
     db.session.add(new_employee)
