@@ -1,0 +1,2 @@
+FLASK_APP=employee-tracker
+FLASK_ENV=development
