@@ -2,8 +2,8 @@ import unittest
 from datetime import datetime
 
 from flask_testing import TestCase
-from app import app, db
-from models import Employee
+from employee_tracker import app, db
+from models.models import Employee
 
 
 class TestModels(TestCase):

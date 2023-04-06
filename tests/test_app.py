@@ -1,7 +1,7 @@
 import unittest
 from flask_testing import TestCase
 from datetime import date
-from app import app, db, Employee
+from employee_tracker import app, db, Employee
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///employees.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
